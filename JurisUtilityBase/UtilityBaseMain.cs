@@ -99,7 +99,7 @@ namespace JurisUtilityBase
         private void DoDaFix()
         {
             string sql = "  insert into trustledger ([TLMatter],[TLBank] ,[TLType] ,[TLDate] ,[TLCheckNbr] ,[TLAmount] ,[TLMemo], tlsysnbr) " +
-                        " values(65258, 'T10', 1, convert(DateTime, '02/13/2020', 102), 0, 442.24, 'Added To Ledger By Tool on: ' + convert(varchar, getdate(), 101), (select max(tlsysnbr) + 1 from trustledger)) ";
+            " values(65258, 'T10', 1, convert(DateTime, '02/13/2020', 102), 0, 442.24, 'Added To Ledger By Tool on: ' + convert(varchar, getdate(), 101), (select max(tlsysnbr) + 1 from trustledger)) ";
             _jurisUtility.ExecuteNonQuery(0, sql);
 
             sql = "  insert into trustledger ([TLMatter],[TLBank] ,[TLType] ,[TLDate] ,[TLCheckNbr] ,[TLAmount] ,[TLMemo], tlsysnbr) " +
@@ -108,12 +108,20 @@ namespace JurisUtilityBase
 
             sql = "update trustaccount set  TABalance = ggn.balance from trustaccount " +
                    " inner join (select TLMatter, TLBank, sum(TLAmount) as balance from trustledger " +
-                    " group by tlmatter, tlbank) ggn on ggn.tlmatter = trustaccount.tamatter and ggn.tlbank = tabank" ;
+                    " group by tlmatter, tlbank) ggn on ggn.tlmatter = trustaccount.tamatter and ggn.tlbank = tabank";
             _jurisUtility.ExecuteNonQuery(0, sql);
 
-            UpdateStatus("2 transactions to trust ledger updated.", 1, 1);
+            sql = "  update TrustSumByPrd set TSPDeposits = 1207.66, TSPAdjustments = 0, TSPPayments = 0 " +
+                        " where TSPPrdNbr = 2 and TSPPrdYear = 2020 and tspmatter = 65258 and tspBank = 'T10' ";
+            _jurisUtility.ExecuteNonQuery(0, sql);
 
-            MessageBox.Show("The process is complete. Both transactions were added successfully.", "Confirmation", MessageBoxButtons.OK, MessageBoxIcon.None);
+            sql = " insert into TrustSumByPrd(TSPMatter, TSPBank, TSPPrdYear, TSPPrdNbr, TSPDeposits, TSPPayments, TSPAdjustments) " +
+                  "  values (70123, 'T10', 2020, 2, 115.00, 0.00, 0.00) ";
+            _jurisUtility.ExecuteNonQuery(0, sql);
+
+            UpdateStatus("TrustSumByPrd updated.", 1, 1);
+
+            MessageBox.Show("The process is complete. .", "Confirmation", MessageBoxButtons.OK, MessageBoxIcon.None);
         }
         private bool VerifyFirmName()
         {
